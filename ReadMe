@@ -4,26 +4,26 @@
 
 Ky projekt është zhvilluar në Python si pjesë e një projekti grupor në lëndën Siguri e të Dhënave.
 
-Qëllimi kryesor i projektit është simulimi i një komunikimi të sigurt ndërmjet klientit dhe serverit duke përdorur mekanizma bazikë të sigurisë si:
+Qëllimi kryesor i projektit është simulimi i komunikimit të sigurt ndërmjet klientit dhe serverit duke përdorur mekanizma bazikë të sigurisë si:
 
-* Enkriptimi RSA
-* Nënshkrimet digjitale
-* Verifikimi i integritetit të mesazheve
-* Validimi i inputeve
-* Menaxhimi i komunikimit klient-server
+- Enkriptimi RSA
+- Nënshkrimet digjitale
+- Verifikimi i integritetit të mesazheve
+- Validimi i inputeve
+- Menaxhimi i komunikimit klient-server
 
-Sistemi është ndarë në module të veçanta për ta bërë kodin më të organizuar, më të lehtë për mirëmbajtje dhe më të kuptueshëm gjatë zhvillimit.
+Sistemi është ndarë në module të veçanta për organizim më të mirë të kodit, mirëmbajtje më të lehtë dhe ndarje të qartë të përgjegjësive.
 
 ---
 
 # Teknologjitë e Përdorura
 
-* Python 3
-* TCP Socket Programming
-* RSA Cryptography
-* SHA-256 Hashing
-* JSON Communication
-* Git & GitHub
+- Python 3
+- TCP Socket Programming
+- RSA Cryptography
+- SHA-256 Hashing
+- JSON Communication
+- Git & GitHub
 
 ---
 
@@ -52,90 +52,153 @@ Faza3_DS/
 
 # Pjesët Kryesore të Projektit
 
-## Client Application
+## Client Application (`client.py`)
+
+Moduli `client.py` përfaqëson anën e klientit në sistemin e komunikimit të sigurt. Ai është përgjegjës për lidhjen me serverin, dërgimin dhe pranimin e mesazheve, si dhe bashkëpunimin me security layer për enkriptim dhe verifikim të të dhënave.
+
+Ky modul menaxhon ndërveprimin e përdoruesit me sistemin dhe komunikimin me serverin përmes TCP sockets.
 
 ### Përgjegjësitë
 
-* Lidhja me serverin përmes TCP sockets
-* Dërgimi dhe pranimi i mesazheve
-* Menaxhimi i komunikimit klient-server
-* Menaxhimi i inputeve të përdoruesit
+- Lidhja me serverin përmes TCP sockets
+- Dërgimi dhe pranimi i mesazheve
+- Menaxhimi i komunikimit klient-server
+- Menaxhimi i inputeve të përdoruesit
+- Bashkëpunimi me security layer për enkriptim dhe verifikim
 
 ### Punë konkrete
 
-* `client.py`
-* Dërgimi i kërkesave
-* Marrja e përgjigjeve
-* Komunikimi me serverin
+- `client.py`
+- Dërgimi i kërkesave
+- Marrja e përgjigjeve
+- Komunikimi me serverin
+- Menaxhimi i sesioneve të klientit
+- Përpunimi i mesazheve hyrëse dhe dalëse
+
+### Rrjedha e komunikimit
+
+1. Klienti krijon lidhje me serverin.
+2. Përdoruesi jep mesazhin/inputin.
+3. Inputi validohet para dërgimit.
+4. Mesazhi përgatitet për enkriptim dhe nënshkrim.
+5. Payload-i dërgohet te serveri.
+6. Klienti pret dhe përpunon përgjigjen e serverit.
 
 ---
 
-## Server Application
+## Server Application (`Server.py`)
+
+Moduli `Server.py` përfaqëson anën e serverit në sistemin e komunikimit të sigurt. Ai menaxhon lidhjet hyrëse të klientëve, routing-un e mesazheve dhe koordinimin e komunikimit ndërmjet pjesëve të sistemit.
+
+Serveri është ndërtuar për të menaxhuar shumë klientë njëkohësisht duke përdorur socket programming dhe thread handling.
 
 ### Përgjegjësitë
 
-* Arkitektura e serverit
-* Menaxhimi i shumë klientëve njëkohësisht
-* Routing i mesazheve ndërmjet klientëve
-* Menaxhimi i sesioneve dhe autentifikimit
-* Kontrolli i komunikimit klient-server
+- Arkitektura e serverit
+- Menaxhimi i shumë klientëve njëkohësisht
+- Routing i mesazheve ndërmjet klientëve
+- Menaxhimi i sesioneve dhe autentifikimit
+- Kontrolli i komunikimit klient-server
+- Menaxhimi i lidhjeve hyrëse
 
 ### Punë konkrete
 
-* `Server.py`
-* Socket listener
-* Client management
-* Thread handling
-* Session tracking
-* Message routing
-* Error handling dhe logging
+- `Server.py`
+- Socket listener
+- Client management
+- Thread handling
+- Session tracking
+- Message routing
+- Error handling dhe logging
+
+### Rrjedha e funksionimit
+
+1. Serveri inicializon socket listener.
+2. Pret lidhje hyrëse nga klientët.
+3. Për secilin klient krijohet thread i veçantë.
+4. Serveri pranon dhe përpunon mesazhet hyrëse.
+5. Payload-et ridrejtohen ose verifikohen sipas logjikës së sistemit.
+6. Menaxhohen sesionet dhe komunikimi ndërmjet klientëve.
+7. Gabimet dhe eventet regjistrohen për debugging dhe monitoring.
 
 ---
 
-## Security Layer
+## RSA & Key Management (`rsa.py`)
 
-### Përgjegjësitë
+Moduli `rsa.py` është komponenti kryesor i sigurisë në këtë projekt. Ai implementon logjikën e kriptografisë asimetrike RSA dhe përdoret nga `client.py` dhe `server.py` për të mundësuar komunikim të sigurt në modelin client-server. Ky modul merret vetëm me kriptografi dhe menaxhim çelësash; nuk merret me `socket`, `listen()`, `accept()`, `connect()` apo `CLI`.
 
-* Hashing dhe kontrolli i integritetit
-* Nënshkrimet digjitale
-* Validimi i inputeve
-* Logging i eventeve të sigurisë
-* Menaxhimi i gabimeve të sigurisë
+## Qëllimi i modulit
 
-### Punë konkrete
+Qëllimi i `rsa.py` është të ofrojë një bazë të plotë për:
+- gjenerimin e çelësave RSA
+- ruajtjen dhe leximin e çelësave
+- serializimin e `public key` për shkëmbim në rrjet
+- enkriptimin dhe dekriptimin e mesazheve
+- nënshkrimin digjital dhe verifikimin e nënshkrimeve
+- hashing me `SHA-256`
+- validimin e kufirit të mesazhit për RSA
 
-* `hashing.py`
-* `integrity.py`
-* `signatures.py`
-* `validators.py`
-* `audit.py`
-* `exceptions.py`
+Ky modul është ndërtuar që të përdoret si “security layer” nga pjesët e tjera të sistemit pa e përzier logjikën e rrjetit me logjikën e kriptografisë.
+
+## Zgjedhjet e sigurisë
+
+Në këtë implementim janë përdorur këto zgjedhje:
+- `RSA 2048-bit` për çiftin e çelësave
+- `OAEP + SHA-256` për enkriptim/dekriptim
+- `PSS + SHA-256` për nënshkrim digjital
+- `UTF-8` për enkodimin e tekstit
+- `PEM` për formatin e eksportimit të çelësave
+- `Base64` për transportin e `ciphertext` dhe `signature` në rrjet
+
+Këto zgjedhje janë bërë sepse janë më të sigurta dhe më të përshtatshme se “raw RSA” ose padding të papërshtatshëm. `OAEP` përdoret për konfidencialitet, ndërsa `PSS` për autenticitet dhe integritet.
+
+## Si funksionon në rrjedhën e projektit
+
+Rrjedha logjike e përdorimit të `rsa.py` është kjo:
+1. Klienti dhe serveri gjenerojnë çelësat e tyre RSA në fillim të ekzekutimit.
+2. Secila palë mban `private key` lokal dhe shkëmben vetëm `public key`.
+3. Kur përdoruesi dërgon mesazh, plaintext-i kontrollohet për madhësi.
+4. Mesazhi enkriptohet me `public key` të marrësit.
+5. Payload-i i dakorduar nënshkruhet me `private key` të dërguesit.
+6. `ciphertext` dhe `signature` dërgohen në `Base64`.
+7. Marrësi verifikon nënshkrimin me `public key` të dërguesit.
+8. Nëse verifikimi kalon, ciphertext-i dekriptohet me `private key` të vet.
 
 ---
 
-# Modulet e Sigurisë
+# Security Layer
 
-### hashing.py
+## Përgjegjësitë
+
+- Hashing dhe kontrolli i integritetit
+- Nënshkrimet digjitale
+- Validimi i inputeve
+- Logging i eventeve të sigurisë
+- Menaxhimi i gabimeve të sigurisë
+
+## Modulet e Sigurisë
+
+### `hashing.py`
 
 Përdoret për gjenerimin e hash-eve SHA-256 të mesazheve.
 
-### integrity.py
+### `integrity.py`
 
 Kontrollon integritetin e mesazheve duke krahasuar hash-in origjinal me hash-in e mesazhit të pranuar.
 
-### signatures.py
+### `signatures.py`
 
 Menaxhon krijimin dhe verifikimin e nënshkrimeve digjitale.
 
-### validators.py
+### `validators.py`
 
 Përdoret për validimin e inputeve dhe kontrollin e të dhënave para përpunimit.
 
-### audit.py
+### `audit.py`
 
 Regjistron eventet dhe gabimet e sigurisë për monitoring dhe debugging.
 
-### exceptions.py
+### `exceptions.py`
 
 Përmban custom exceptions për menaxhim më të organizuar të gabimeve të sigurisë.
 
@@ -143,13 +206,13 @@ Përmban custom exceptions për menaxhim më të organizuar të gabimeve të sig
 
 # Funksionalitetet Kryesore
 
-* Komunikim klient-server përmes TCP sockets
-* Enkriptim i mesazheve me RSA
-* Verifikim i integritetit të mesazheve
-* Nënshkrime digjitale
-* Validim i inputeve para përpunimit
-* Logging dhe auditim i eventeve të sigurisë
-* Menaxhim i klientëve të shumtë
+- Komunikim klient-server përmes TCP sockets
+- Enkriptim i mesazheve me RSA
+- Verifikim i integritetit të mesazheve
+- Nënshkrime digjitale
+- Validim i inputeve para përpunimit
+- Logging dhe auditim i eventeve të sigurisë
+- Menaxhim i klientëve të shumtë
 
 ---
 
@@ -162,5 +225,3 @@ Kodi është menaxhuar përmes Git dhe GitHub duke përdorur branch-e të ndara 
 # Përfundim
 
 Ky projekt demonstron përdorimin praktik të mekanizmave bazikë të sigurisë në komunikimin klient-server duke kombinuar kriptografinë RSA, hashing-un, validimin e inputeve dhe organizimin modular të kodit në një sistem të thjeshtë komunikimi të sigurt.
-
-
