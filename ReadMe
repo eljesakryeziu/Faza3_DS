@@ -68,3 +68,46 @@ Integrity verification
 Signature verification
 Input validation
 Tampering detection
+
+
+==> RSA & Key Management (`rsa.py`)
+
+Moduli `rsa.py` është komponenti kryesor i sigurisë në këtë projekt. Ai implementon logjikën e kriptografisë asimetrike RSA dhe përdoret nga `client.py` dhe `server.py` për të mundësuar komunikim të sigurt në modelin client-server. Ky modul merret vetëm me kriptografi dhe menaxhim çelësash; nuk merret me `socket`, `listen()`, `accept()`, `connect()` apo `CLI`.
+
+==> Qëllimi i modulit
+
+Qëllimi i `rsa.py` është të ofrojë një bazë të plotë për:
+- gjenerimin e çelësave RSA
+- ruajtjen dhe leximin e çelësave
+- serializimin e `public key` për shkëmbim në rrjet
+- enkriptimin dhe dekriptimin e mesazheve
+- nënshkrimin digjital dhe verifikimin e nënshkrimeve
+- hashing me `SHA-256`
+- validimin e kufirit të mesazhit për RSA
+
+Ky modul është ndërtuar që të përdoret si “security layer” nga pjesët e tjera të sistemit pa e përzier logjikën e rrjetit me logjikën e kriptografisë.
+
+==>Zgjedhjet e sigurisë
+
+Në këtë implementim janë përdorur këto zgjedhje:
+- `RSA 2048-bit` për çiftin e çelësave
+- `OAEP + SHA-256` për enkriptim/dekriptim
+- `PSS + SHA-256` për nënshkrim digjital
+- `UTF-8` për enkodimin e tekstit
+- `PEM` për formatin e eksportimit të çelësave
+- `Base64` për transportin e `ciphertext` dhe `signature` në rrjet
+
+Këto zgjedhje janë bërë sepse janë më të sigurta dhe më të përshtatshme se “raw RSA” ose padding të papërshtatshëm. `OAEP` përdoret për konfidencialitet, ndërsa `PSS` për autenticitet dhe integritet.
+
+
+Si funksionon në rrjedhën e projektit
+
+Rrjedha logjike e përdorimit të `rsa.py` është kjo:
+1. Klienti dhe serveri gjenerojnë çelësat e tyre RSA në fillim të ekzekutimit.
+2. Secila palë mban `private key` lokal dhe shkëmben vetëm `public key`.
+3. Kur përdoruesi dërgon mesazh, plaintext-i kontrollohet për madhësi.
+4. Mesazhi enkriptohet me `public key` të marrësit.
+5. Payload-i i dakorduar nënshkruhet me `private key` të dërguesit.
+6. `ciphertext` dhe `signature` dërgohen në `Base64`.
+7. Marrësi verifikon nënshkrimin me `public key` të dërguesit.
+8. Nëse verifikimi kalon, ciphertext-i dekriptohet me `private key` të vet.
