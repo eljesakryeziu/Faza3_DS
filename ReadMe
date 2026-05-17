@@ -1,0 +1,70 @@
+# Security Layer – Encrypted Messaging Platform
+
+## Përshkrimi
+
+Kjo pjesë e projektit implementon shtresën e sigurisë për platformën e mesazheve të enkriptuara në modelin client-server.
+
+Funksionalitetet e implementuara fokusohen në:
+
+- SHA-256 hashing
+- Verifikimin e integritetit të mesazheve
+- Verifikimin e nënshkrimeve
+- Validimin e inputeve
+- Kontrolle bazike të sigurisë
+
+---
+
+# Struktura
+
+```text
+security/
+├── hashing.py
+├── integrity.py
+├── signatures.py
+└── validators.py
+Modulet e Implementuara
+hashing.py
+
+Gjeneron SHA-256 hash për mesazhe.
+
+Ekzekutimi:
+
+python security/hashing.py
+integrity.py
+
+Verifikon integritetin e mesazheve duke krahasuar hash-et.
+
+Ekzekutimi:
+
+python security/integrity.py
+signatures.py
+
+Implementon logjikën bazike të krijimit dhe verifikimit të nënshkrimeve.
+
+Ekzekutimi:
+
+python security/signatures.py
+validators.py
+
+Realizon validimin e inputeve dhe kontrolle bazike të sigurisë.
+
+Ekzekutimi:
+
+python security/validators.py
+Shembuj të Rezultateve
+Integrity Verification
+Integrity Verified: True
+Signature Verification
+Signature Valid: True
+Message Validation
+Message Valid: True
+Teknologjitë e Përdorura
+Python 3
+hashlib
+Git & GitHub
+Konceptet e Sigurisë të Implementuara
+Hashing
+Integrity verification
+Signature verification
+Input validation
+Tampering detection
