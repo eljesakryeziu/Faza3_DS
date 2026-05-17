@@ -44,7 +44,7 @@ from typing import Dict, Optional, Tuple
 # Shtresa e sigurisë – importet nga follderi security/
 # ---------------------------------------------------------------------------
 try:
-    from security.rsa import (
+    from rsa import (
         RSAPrivateKey,
         RSAPublicKey,
         ciphertext_from_base64,
@@ -77,14 +77,14 @@ except ImportError as exc:
 # ---------------------------------------------------------------------------
 # Konstantet e serverit
 # ---------------------------------------------------------------------------
-DEFAULT_HOST        = "0.0.0.0"
-DEFAULT_PORT        = 9999
+DEFAULT_HOST = "0.0.0.0"
+DEFAULT_PORT = 9999
 DEFAULT_MAX_CLIENTS = 50
-KEY_SIZE            = 2048
-BUFFER_SIZE         = 65536   # 64 KB
-SOCKET_TIMEOUT      = 120.0   # sekonda — koha maksimale e joaktivitetit
-MAX_USERNAME_LEN    = 32
-HEARTBEAT_INTERVAL  = 30.0    # sekonda
+KEY_SIZE = 2048
+BUFFER_SIZE = 65536  # 64 KB
+SOCKET_TIMEOUT = 120.0  # sekonda — koha maksimale e joaktivitetit
+MAX_USERNAME_LEN = 32
+HEARTBEAT_INTERVAL = 30.0  # sekonda
 
 # ---------------------------------------------------------------------------
 # Konfigurimi i logjimit
@@ -112,10 +112,10 @@ def build_hello_packet(public_key: RSAPublicKey) -> bytes:
     """Paketë HELLO e serverit – dërgon çelësin publik PEM."""
     pem = serialize_public_key(public_key).decode("ascii")
     packet = {
-        "type":       "HELLO",
-        "username":   "__SERVER__",
+        "type": "HELLO",
+        "username": "__SERVER__",
         "public_key": pem,
-        "timestamp":  _now_iso(),
+        "timestamp": _now_iso(),
     }
     return (json.dumps(packet) + "\n").encode("utf-8")
 
@@ -152,17 +152,17 @@ def build_message_packet(
       3. Bashkëngjet hash-in e integritetit.
     """
     ciphertext_bytes = encrypt_message(plaintext, recipient_public_key)
-    signature_bytes  = sign_data(plaintext, server_private_key)
-    integrity_hash   = generate_hash(plaintext)
+    signature_bytes = sign_data(plaintext, server_private_key)
+    integrity_hash = generate_hash(plaintext)
 
     packet = {
-        "type":       "MESSAGE",
-        "sender":     sender,
-        "recipient":  recipient,
+        "type": "MESSAGE",
+        "sender": sender,
+        "recipient": recipient,
         "ciphertext": ciphertext_to_base64(ciphertext_bytes),
-        "signature":  signature_to_base64(signature_bytes),
-        "integrity":  integrity_hash,
-        "timestamp":  _now_iso(),
+        "signature": signature_to_base64(signature_bytes),
+        "integrity": integrity_hash,
+        "timestamp": _now_iso(),
     }
     return (json.dumps(packet) + "\n").encode("utf-8")
 
@@ -198,13 +198,13 @@ class ClientSession:
         address: Tuple[str, int],
         server: "EncryptedServer",
     ) -> None:
-        self.conn      = conn
-        self.address   = address
-        self.server    = server
-        self.username: Optional[str]    = None
+        self.conn = conn
+        self.address = address
+        self.server = server
+        self.username: Optional[str] = None
         self.public_key: Optional[RSAPublicKey] = None
         self.connected = True
-        self._lock     = threading.Lock()
+        self._lock = threading.Lock()
         self._joined_at = time.time()
 
     # ------------------------------------------------------------------
@@ -277,9 +277,7 @@ class ClientSession:
         # Validimi i username-it
         username = str(packet.get("username", "")).strip()
         if not username or len(username) > MAX_USERNAME_LEN:
-            self.send_error(
-                f"Username duhet të jetë 1–{MAX_USERNAME_LEN} karaktere."
-            )
+            self.send_error(f"Username duhet të jetë 1–{MAX_USERNAME_LEN} karaktere.")
             return False
 
         # Validimi dhe deserializimi i çelësit publik
@@ -302,9 +300,9 @@ class ClientSession:
             )
             return False
 
-        self.username   = username
+        self.username = username
         self.public_key = client_pub_key
-        fingerprint     = public_key_fingerprint(client_pub_key)
+        fingerprint = public_key_fingerprint(client_pub_key)
         log.info(
             f"[{self.address}] Klienti '{username}' u regjistrua. "
             f"Gjurma: {fingerprint}"
@@ -379,9 +377,7 @@ class ClientSession:
             self.conn.close()
         except OSError:
             pass
-        log.info(
-            f"[{self.address}] Sesioni i '{self.username}' u mbyll."
-        )
+        log.info(f"[{self.address}] Sesioni i '{self.username}' u mbyll.")
 
 
 # ---------------------------------------------------------------------------
@@ -400,8 +396,8 @@ class EncryptedServer:
     """
 
     def __init__(self, host: str, port: int, max_clients: int) -> None:
-        self.host        = host
-        self.port        = port
+        self.host = host
+        self.port = port
         self.max_clients = max_clients
 
         # Gjenerimi i çiftit të çelësave të serverit
@@ -487,9 +483,7 @@ class EncryptedServer:
             )
             session.send_error("HELLO pritet vetëm gjatë lidhjes fillestare.")
         else:
-            log.warning(
-                f"[{session.address}] Lloji i paketës i panjohur: {ptype!r}"
-            )
+            log.warning(f"[{session.address}] Lloji i paketës i panjohur: {ptype!r}")
             session.send_error(f"Lloji i paketës '{ptype}' nuk njihet.")
 
     def _handle_message(self, session: ClientSession, packet: dict) -> None:
@@ -501,16 +495,16 @@ class EncryptedServer:
           4. Verifiko nënshkrimin e dërguesit.
           5. Ruto te marrësi/marrësit (ri-enkriptim për secilin).
         """
-        sender    = session.username
-        ct_b64    = packet.get("ciphertext", "")
-        sig_b64   = packet.get("signature",  "")
-        integrity = packet.get("integrity",  "")
+        sender = session.username
+        ct_b64 = packet.get("ciphertext", "")
+        sig_b64 = packet.get("signature", "")
+        integrity = packet.get("integrity", "")
         recipient = packet.get("recipient", "ALL").strip()
 
         # ── 1. Dekriptimi ──────────────────────────────────────────────
         try:
             ciphertext = ciphertext_from_base64(ct_b64)
-            plaintext  = decrypt_message_to_text(ciphertext, self.private_key)
+            plaintext = decrypt_message_to_text(ciphertext, self.private_key)
         except RSADecryptionError as err:
             log.error(f"Dekriptimi i mesazhit nga '{sender}' dështoi: {err}")
             session.send_error("Mesazhi nuk u dekriptua. Kontrollo enkriptimin.")
@@ -524,8 +518,7 @@ class EncryptedServer:
         if not validate_message(plaintext):
             log.warning(f"Mesazh i pavlefshëm nga '{sender}': validimi dështoi.")
             session.send_error(
-                "Mesazhi nuk është i vlefshëm "
-                "(bosh, ose tejkalon 1024 karaktere)."
+                "Mesazhi nuk është i vlefshëm " "(bosh, ose tejkalon 1024 karaktere)."
             )
             return
 
@@ -547,7 +540,7 @@ class EncryptedServer:
         signature_ok = False
         if sig_b64 and session.public_key is not None:
             try:
-                sig_bytes    = signature_from_base64(sig_b64)
+                sig_bytes = signature_from_base64(sig_b64)
                 signature_ok = verify_signature(
                     plaintext, sig_bytes, session.public_key
                 )
@@ -582,7 +575,8 @@ class EncryptedServer:
         Çdo marrës merr mesazhin e enkriptuar me çelësin e tij publik.
         """
         targets = [
-            s for s in self._all_sessions()
+            s
+            for s in self._all_sessions()
             if s.username != sender and s.connected and s.public_key is not None
         ]
         if not targets:
@@ -656,9 +650,7 @@ class EncryptedServer:
         except RSAError as err:
             log.error(f"Gabim RSA gjatë dërgimit te '{target.username}': {err}")
         except Exception as err:
-            log.error(
-                f"Gabim i papritur gjatë dorëzimit te '{target.username}': {err}"
-            )
+            log.error(f"Gabim i papritur gjatë dorëzimit te '{target.username}': {err}")
 
     # ------------------------------------------------------------------
     # Transmetime broadcast nga serveri
@@ -709,7 +701,7 @@ class EncryptedServer:
                     try:
                         conn, addr = self._server_sock.accept()
                     except socket.timeout:
-                        continue   # kthehu dhe kontrollo self._running
+                        continue  # kthehu dhe kontrollo self._running
                 except OSError as err:
                     if self._running:
                         log.error(f"Gabim pranimi: {err}")
