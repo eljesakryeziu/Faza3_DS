@@ -1,70 +1,166 @@
-# Security Layer – Encrypted Messaging Platform
+# Sistemi i Komunikimit të Sigurt
 
-## Përshkrimi
+## Përshkrimi i Projektit
 
-Kjo pjesë e projektit implementon shtresën e sigurisë për platformën e mesazheve të enkriptuara në modelin client-server.
+Ky projekt është zhvilluar në Python si pjesë e një projekti grupor në lëndën Siguri e të Dhënave.
 
-Funksionalitetet e implementuara fokusohen në:
+Qëllimi kryesor i projektit është simulimi i një komunikimi të sigurt ndërmjet klientit dhe serverit duke përdorur mekanizma bazikë të sigurisë si:
 
-- SHA-256 hashing
-- Verifikimin e integritetit të mesazheve
-- Verifikimin e nënshkrimeve
-- Validimin e inputeve
-- Kontrolle bazike të sigurisë
+* Enkriptimi RSA
+* Nënshkrimet digjitale
+* Verifikimi i integritetit të mesazheve
+* Validimi i inputeve
+* Menaxhimi i komunikimit klient-server
+
+Sistemi është ndarë në module të veçanta për ta bërë kodin më të organizuar, më të lehtë për mirëmbajtje dhe më të kuptueshëm gjatë zhvillimit.
 
 ---
 
-# Struktura
+# Teknologjitë e Përdorura
 
-```text
-security/
-├── hashing.py
-├── integrity.py
-├── signatures.py
-└── validators.py
-Modulet e Implementuara
-hashing.py
+* Python 3
+* TCP Socket Programming
+* RSA Cryptography
+* SHA-256 Hashing
+* JSON Communication
+* Git & GitHub
 
-Gjeneron SHA-256 hash për mesazhe.
+---
 
-Ekzekutimi:
+# Struktura e Projektit
 
-python security/hashing.py
-integrity.py
+```bash
+Faza3_DS/
+│
+├── client.py
+├── Server.py
+├── rsa.py
+├── ReadMe
+├── Pershkrimi_i_Klientit.txt
+├── .gitignore
+│
+└── security/
+    ├── audit.py
+    ├── exceptions.py
+    ├── hashing.py
+    ├── integrity.py
+    ├── signatures.py
+    └── validators.py
+```
 
-Verifikon integritetin e mesazheve duke krahasuar hash-et.
+---
 
-Ekzekutimi:
+# Pjesët Kryesore të Projektit
 
-python security/integrity.py
-signatures.py
+## Client Application
 
-Implementon logjikën bazike të krijimit dhe verifikimit të nënshkrimeve.
+### Përgjegjësitë
 
-Ekzekutimi:
+* Lidhja me serverin përmes TCP sockets
+* Dërgimi dhe pranimi i mesazheve
+* Menaxhimi i komunikimit klient-server
+* Menaxhimi i inputeve të përdoruesit
 
-python security/signatures.py
-validators.py
+### Punë konkrete
 
-Realizon validimin e inputeve dhe kontrolle bazike të sigurisë.
+* `client.py`
+* Dërgimi i kërkesave
+* Marrja e përgjigjeve
+* Komunikimi me serverin
 
-Ekzekutimi:
+---
 
-python security/validators.py
-Shembuj të Rezultateve
-Integrity Verification
-Integrity Verified: True
-Signature Verification
-Signature Valid: True
-Message Validation
-Message Valid: True
-Teknologjitë e Përdorura
-Python 3
-hashlib
-Git & GitHub
-Konceptet e Sigurisë të Implementuara
-Hashing
-Integrity verification
-Signature verification
-Input validation
-Tampering detection
+## Server Application
+
+### Përgjegjësitë
+
+* Arkitektura e serverit
+* Menaxhimi i shumë klientëve njëkohësisht
+* Routing i mesazheve ndërmjet klientëve
+* Menaxhimi i sesioneve dhe autentifikimit
+* Kontrolli i komunikimit klient-server
+
+### Punë konkrete
+
+* `Server.py`
+* Socket listener
+* Client management
+* Thread handling
+* Session tracking
+* Message routing
+* Error handling dhe logging
+
+---
+
+## Security Layer
+
+### Përgjegjësitë
+
+* Hashing dhe kontrolli i integritetit
+* Nënshkrimet digjitale
+* Validimi i inputeve
+* Logging i eventeve të sigurisë
+* Menaxhimi i gabimeve të sigurisë
+
+### Punë konkrete
+
+* `hashing.py`
+* `integrity.py`
+* `signatures.py`
+* `validators.py`
+* `audit.py`
+* `exceptions.py`
+
+---
+
+# Modulet e Sigurisë
+
+### hashing.py
+
+Përdoret për gjenerimin e hash-eve SHA-256 të mesazheve.
+
+### integrity.py
+
+Kontrollon integritetin e mesazheve duke krahasuar hash-in origjinal me hash-in e mesazhit të pranuar.
+
+### signatures.py
+
+Menaxhon krijimin dhe verifikimin e nënshkrimeve digjitale.
+
+### validators.py
+
+Përdoret për validimin e inputeve dhe kontrollin e të dhënave para përpunimit.
+
+### audit.py
+
+Regjistron eventet dhe gabimet e sigurisë për monitoring dhe debugging.
+
+### exceptions.py
+
+Përmban custom exceptions për menaxhim më të organizuar të gabimeve të sigurisë.
+
+---
+
+# Funksionalitetet Kryesore
+
+* Komunikim klient-server përmes TCP sockets
+* Enkriptim i mesazheve me RSA
+* Verifikim i integritetit të mesazheve
+* Nënshkrime digjitale
+* Validim i inputeve para përpunimit
+* Logging dhe auditim i eventeve të sigurisë
+* Menaxhim i klientëve të shumtë
+
+---
+
+# Menaxhimi i Projektit
+
+Kodi është menaxhuar përmes Git dhe GitHub duke përdorur branch-e të ndara për secilën pjesë të projektit dhe pull requests për bashkimin e ndryshimeve.
+
+---
+
+# Përfundim
+
+Ky projekt demonstron përdorimin praktik të mekanizmave bazikë të sigurisë në komunikimin klient-server duke kombinuar kriptografinë RSA, hashing-un, validimin e inputeve dhe organizimin modular të kodit në një sistem të thjeshtë komunikimi të sigurt.
+
+
