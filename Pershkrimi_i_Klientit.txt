@@ -1,0 +1,18 @@
+Struktura e kodit:
+
+EncryptedClient është klasa kryesore me këto metoda:
+
+connect() — lidhet me serverin, bën RSA key-exchange (HELLO handshake)
+send_message() — validon → enkripton → nënshkruan → dërgon
+_receive_loop() — thread i veçantë që lexon paketa JSON vazhdimisht
+_process_message_packet() — dekripton + verifikon nënshkrimin + verifikon integritetin
+run() — laku CLI me input interaktiv
+------------------------------------------------------------------------------------------
+
+Protokolli JSON ka dy lloje paketash kryesore:
+HELLOS -> hkëmben çelësin publik PEM me serverin
+MESSAGE -> Mesazh i enkriptuar (base64) + firmë (base64) + hash integriteti
+
+------------------------------------------------------------------------------------------
+
+
