@@ -60,7 +60,7 @@ from typing import Optional
 # Shtresa e sigurisë – importet nga follderi security/
 # ---------------------------------------------------------------------------
 try:
-    from security.rsa import (
+    from rsa import (
         RSAPrivateKey,
         RSAPublicKey,
         ciphertext_from_base64,
@@ -97,10 +97,10 @@ DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 9999
 DEFAULT_USERNAME = "Client"
 KEY_SIZE = 2048
-BUFFER_SIZE = 65536          # 64 KB – mjafton për një paketë RSA 2048-bit
-SOCKET_TIMEOUT = 60.0        # sekonda
+BUFFER_SIZE = 65536  # 64 KB – mjafton për një paketë RSA 2048-bit
+SOCKET_TIMEOUT = 60.0  # sekonda
 RECONNECT_ATTEMPTS = 3
-RECONNECT_DELAY = 2.0        # sekonda
+RECONNECT_DELAY = 2.0  # sekonda
 
 
 # ---------------------------------------------------------------------------
@@ -108,13 +108,14 @@ RECONNECT_DELAY = 2.0        # sekonda
 # ---------------------------------------------------------------------------
 class Color:
     """Kodet ANSI për ngjyra në terminal (funksionojnë në Linux/macOS/Win10+)."""
-    RESET   = "\033[0m"
-    BOLD    = "\033[1m"
-    GREEN   = "\033[92m"
-    CYAN    = "\033[96m"
-    YELLOW  = "\033[93m"
-    RED     = "\033[91m"
-    GREY    = "\033[90m"
+
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
+    GREEN = "\033[92m"
+    CYAN = "\033[96m"
+    YELLOW = "\033[93m"
+    RED = "\033[91m"
+    GREY = "\033[90m"
     MAGENTA = "\033[95m"
 
 
@@ -205,17 +206,17 @@ def build_message_packet(
       3. Llogarit hash integritetin e tekstit të qartë.
     """
     ciphertext_bytes = encrypt_message(plaintext, recipient_public_key)
-    signature_bytes  = sign_data(plaintext, own_private_key)
-    integrity_hash   = generate_hash(plaintext)
+    signature_bytes = sign_data(plaintext, own_private_key)
+    integrity_hash = generate_hash(plaintext)
 
     packet = {
-        "type":      "MESSAGE",
-        "sender":    sender,
+        "type": "MESSAGE",
+        "sender": sender,
         "recipient": recipient,
-        "ciphertext":  ciphertext_to_base64(ciphertext_bytes),
-        "signature":   signature_to_base64(signature_bytes),
-        "integrity":   integrity_hash,
-        "timestamp":   _now_iso(),
+        "ciphertext": ciphertext_to_base64(ciphertext_bytes),
+        "signature": signature_to_base64(signature_bytes),
+        "integrity": integrity_hash,
+        "timestamp": _now_iso(),
     }
     return (json.dumps(packet) + "\n").encode("utf-8")
 
@@ -253,8 +254,8 @@ class EncryptedClient:
     """
 
     def __init__(self, host: str, port: int, username: str) -> None:
-        self.host     = host
-        self.port     = port
+        self.host = host
+        self.port = port
         self.username = username
 
         # Gjenerimi i çiftit të çelësave
@@ -264,11 +265,11 @@ class EncryptedClient:
         print_success("Çelësat u gjeneruan.")
 
         self.server_pub_key: Optional[RSAPublicKey] = None
-        self._sock: Optional[socket.socket]         = None
-        self._connected  = False
-        self._running    = False
+        self._sock: Optional[socket.socket] = None
+        self._connected = False
+        self._running = False
         self._recv_thread: Optional[threading.Thread] = None
-        self._lock = threading.Lock()   # për shkrim të sigurt në socket
+        self._lock = threading.Lock()  # për shkrim të sigurt në socket
 
     # ------------------------------------------------------------------
     # Lidhja dhe handshake-u
@@ -280,7 +281,9 @@ class EncryptedClient:
         """
         for attempt in range(1, RECONNECT_ATTEMPTS + 1):
             try:
-                print_info(f"Duke u lidhur me {self.host}:{self.port} (tentativa {attempt}/{RECONNECT_ATTEMPTS})...")
+                print_info(
+                    f"Duke u lidhur me {self.host}:{self.port} (tentativa {attempt}/{RECONNECT_ATTEMPTS})..."
+                )
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 sock.settimeout(SOCKET_TIMEOUT)
                 sock.connect((self.host, self.port))
@@ -291,7 +294,9 @@ class EncryptedClient:
             except (ConnectionRefusedError, OSError) as err:
                 print_error(f"Lidhja dështoi: {err}")
                 if attempt < RECONNECT_ATTEMPTS:
-                    print_info(f"Duke pritur {RECONNECT_DELAY}s para se të provojë sërish...")
+                    print_info(
+                        f"Duke pritur {RECONNECT_DELAY}s para se të provojë sërish..."
+                    )
                     time.sleep(RECONNECT_DELAY)
                 else:
                     return False
@@ -330,7 +335,9 @@ class EncryptedClient:
                 print_error(f"Serveri refuzoi lidhjen: {packet.get('message', '')}")
                 return False
             else:
-                print_warning(f"Lloji i paketës i papritur gjatë handshake-ut: {packet.get('type')}")
+                print_warning(
+                    f"Lloji i paketës i papritur gjatë handshake-ut: {packet.get('type')}"
+                )
                 return False
 
         except (OSError, UnicodeDecodeError) as err:
@@ -427,15 +434,15 @@ class EncryptedClient:
           2. Verifiko nënshkrimin me çelësin publik të dërguesit.
           3. Verifiko integritetin me hash-in e bashkëngjitur.
         """
-        sender    = packet.get("sender", "i panjohur")
-        ct_b64    = packet.get("ciphertext", "")
-        sig_b64   = packet.get("signature", "")
+        sender = packet.get("sender", "i panjohur")
+        ct_b64 = packet.get("ciphertext", "")
+        sig_b64 = packet.get("signature", "")
         integrity = packet.get("integrity", "")
 
         # --- Dekriptimi ---
         try:
             ciphertext = ciphertext_from_base64(ct_b64)
-            plaintext  = decrypt_message_to_text(ciphertext, self.private_key)
+            plaintext = decrypt_message_to_text(ciphertext, self.private_key)
         except RSADecryptionError as err:
             print_error(f"Mesazhi nga '{sender}' nuk u dekriptua: {err}")
             return
@@ -446,7 +453,9 @@ class EncryptedClient:
         # --- Verifikimi i integritetit ---
         if integrity:
             if not verify_integrity(integrity, plaintext):
-                print_warning(f"INTEGRITET I DËMTUAR: mesazhi nga '{sender}' mund të jetë ndryshuar!")
+                print_warning(
+                    f"INTEGRITET I DËMTUAR: mesazhi nga '{sender}' mund të jetë ndryshuar!"
+                )
 
         # --- Verifikimi i nënshkrimit ---
         #
@@ -457,8 +466,10 @@ class EncryptedClient:
         signature_verified = False
         if sig_b64 and self.server_pub_key is not None:
             try:
-                signature_bytes    = signature_from_base64(sig_b64)
-                signature_verified = verify_signature(plaintext, signature_bytes, self.server_pub_key)
+                signature_bytes = signature_from_base64(sig_b64)
+                signature_verified = verify_signature(
+                    plaintext, signature_bytes, self.server_pub_key
+                )
             except Exception:
                 signature_verified = False
 
@@ -479,7 +490,7 @@ class EncryptedClient:
                 if not chunk:
                     print_info("Serveri e mbyll lidhjen.")
                     self._connected = False
-                    self._running   = False
+                    self._running = False
                     break
                 buffer += chunk
                 while "\n" in buffer:
@@ -493,12 +504,12 @@ class EncryptedClient:
                     else:
                         print_warning(f"Paketë e paanalizueshme: {line[:80]}")
             except socket.timeout:
-                continue   # timeout normal, vazhdo loop-in
+                continue  # timeout normal, vazhdo loop-in
             except (OSError, UnicodeDecodeError) as err:
                 if self._running:
                     print_error(f"Gabim marrjeje: {err}")
                 self._connected = False
-                self._running   = False
+                self._running = False
                 break
 
     # ------------------------------------------------------------------
@@ -633,7 +644,7 @@ class EncryptedClient:
 
     def _shutdown(self) -> None:
         """Mbyll lidhjen me pastrim të plotë."""
-        self._running   = False
+        self._running = False
         self._connected = False
         if self._sock:
             try:
