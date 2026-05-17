@@ -1,11 +1,28 @@
 from security.hashing import generate_hash
+from security.audit import log_security_event
+from security.exceptions import IntegrityCheckError, ValidationError
 
 
-def verify_integrity(original_hash, recieved_message):
+def verify_integrity(original_hash: str, received_message: str) -> bool:
+    """
+    Verifies message integrity using SHA-256 hashing.
+    """
 
-    new_hash = generate_hash(recieved_message)
+    if not original_hash or not received_message:
+        log_security_event(
+            "INTEGRITY_ERROR", "Integrity verification failed due to missing data."
+        )
+        raise ValidationError("Hash and message cannot be empty.")
 
-    return original_hash == new_hash
+    new_hash = generate_hash(received_message)
+
+    if original_hash != new_hash:
+        log_security_event("INTEGRITY_FAILED", "Message integrity verification failed.")
+        raise IntegrityCheckError("Message integrity check failed.")
+
+    log_security_event("INTEGRITY_SUCCESS", "Message integrity verified successfully.")
+
+    return True
 
 
 if __name__ == "__main__":
@@ -16,6 +33,10 @@ if __name__ == "__main__":
 
     print("Original Hash:", original_hash)
 
-    is_valid = verify_integrity(original_hash, message)
+    try:
+        is_valid = verify_integrity(original_hash, message)
 
-    print("Integrity Verified:", is_valid)
+        print("Integrity Verified:", is_valid)
+
+    except Exception as error:
+        print("Error:", error)
